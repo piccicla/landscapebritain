@@ -1,0 +1,224 @@
+/* 
+function to convet units
+*/
+CREATE OR REPLACE FUNCTION units_from_to(unitfrom character varying, unitto character varying, thevalue double precision)
+  RETURNS double precision AS
+$$
+	WITH u(unit, unit_to_meters)  AS
+	(VALUES ('mi', 1609.3400), 
+			('km', 1000), 
+			('m',1),
+			('ft', 0.3048) 
+		)
+	SELECT ufrom.unit_to_meters/uto.unit_to_meters*$3
+            FROM 
+		 u As ufrom CROSS JOIN u As uto
+                WHERE ufrom.unit = $1 and uto.unit = $2;
+$$
+  LANGUAGE 'sql' IMMUTABLE STRICT
+  COST 10;
+
+
+
+sql function used to get the result
+
+/* 
+function to get the articles id and bounding boxes intersecting the current map extent
+*/
+create function get_extent_bboxes(top real, left real, bottom real, right real) 
+returns table(ART_ID int) as $$
+	SELECT a."ART_ID" 
+                FROM landscape."LOCATION" as a INNER JOIN ST_GeomFromText('POLYGON(('||$2||' '||$1||','||$4||' '||$1||','||$4||' '||$3||','||$2||' '||$3||','||$2||' '||$1||'))',4326) as myBox
+                ON ST_Intersects(a."GEOM", myBox);
+$$ language sql;
+
+
+
+//selectin ART_ID by level 1
+SELECT distinct
+  a."ART_ID"
+FROM 
+  landscape."LEVEL1" as l1 inner join landscape."ARTICLE_LEVEL" as al on l1."L1_ID"=al."L1_ID"
+  inner join landscape."ARTICLE" as a on al."ART_ID"=a."ART_ID" 
+WHERE
+  l1."L1_ID" = 1
+ORDER BY
+  a."ART_ID" ASC;
+
+
+//select art_id by level 2
+SELECT distinct
+  a."ART_ID"
+FROM 
+  landscape."LEVEL2" as l2 inner join landscape."ARTICLE_LEVEL" as al on l2."L2_ID"=al."L2_ID"
+  inner join landscape."ARTICLE" as a on al."ART_ID"=a."ART_ID" 
+WHERE
+  l2."L2_ID" = 1
+ORDER BY
+  a."ART_ID" ASC;
+
+
+//select art_id by level 3
+SELECT distinct
+  a."ART_ID"
+FROM 
+  landscape."LEVEL3" as l3 inner join landscape."ARTICLE_LEVEL" as al on l3."L3_ID"=al."L3_ID"
+  inner join landscape."ARTICLE" as a on al."ART_ID"=a."ART_ID" 
+WHERE
+  l3."L3_ID" = 1
+ORDER BY
+  a."ART_ID" ASC;
+
+
+
+//select by article things, use union when type is 'or', use 'intersect' when type is 'and'
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a 
+WHERE
+  a."AUTHOR" ~* 'robinson' 
+
+union
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a 
+WHERE
+  a."YEAR"=1995
+
+union
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a 
+WHERE
+  a."TITLE"~* 'distribution'
+
+union 
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a 
+WHERE
+  a."PUB_NAME" = 'Geomorphology'
+
+union 
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a 
+WHERE
+  a."PUBLISHER" = 'Elsevier Ltd'
+
+union
+
+SELECT 
+  a.*
+FROM
+landscape."ARTICLE" as a inner join landscape."SOURCE" as s on a."SOURCE_ID"=s."SOURCE_ID"
+WHERE
+  s."SOURCE_ID"=2
+
+
+
+///exaple when the type for article is "and"
+with spatial_filter("ART_ID") as(
+  select  distinct * from get_extent_bboxes(61.2,-8.6,49.6,2.2)
+),
+level_filter("ART_ID") as(
+SELECT distinct
+  a."ART_ID"
+FROM 
+  landscape."LEVEL1" as l1 inner join landscape."ARTICLE_LEVEL" as al on l1."L1_ID"=al."L1_ID"
+  inner join spatial_filter as a  on al."ART_ID"=a."ART_ID" 
+WHERE
+  l1."L1_ID" = 1
+)
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" inner join landscape."SOURCE" as s on art."SOURCE_ID"=s."SOURCE_ID"
+WHERE
+  art."AUTHOR" ~* 'bottrell' and  art."YEAR"=2008 and art."TITLE"~* 'isotopic' and art."PUBLISHER" = 'Elsevier Ltd' and s."SOURCE_ID"=2
+
+
+
+///exaple when the type for article is "or"-> use union to merge the queries
+with spatial_filter("ART_ID") as(
+  select  distinct * from get_extent_bboxes(61.2,-8.6,49.6,2.2)
+),
+level_filter("ART_ID") as(
+SELECT distinct
+  a."ART_ID"
+FROM 
+  landscape."LEVEL1" as l1 inner join landscape."ARTICLE_LEVEL" as al on l1."L1_ID"=al."L1_ID"
+  inner join spatial_filter as a  on al."ART_ID"=a."ART_ID" 
+WHERE
+  l1."L1_ID" = 1
+)
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" 
+WHERE
+  art."AUTHOR" ~* 'bottrell'  
+
+union
+
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID"
+WHERE
+  art."YEAR"=2008
+
+union
+
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" 
+WHERE
+  art."TITLE"~* 'isotopic'
+
+union 
+
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID"
+WHERE
+  art."PUB_NAME" = 'Quaternary Science Reviews'
+
+union 
+
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" 
+WHERE
+  art."PUBLISHER" = 'Elsevier Ltd'
+
+union
+
+SELECT 
+  art.*
+FROM
+landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" inner join landscape."SOURCE" as s on art."SOURCE_ID"=s."SOURCE_ID"
+WHERE
+  s."SOURCE_ID"=2
+
+
+
+
+
+//query to select a feature 
+SELECT distinct a."ART_ID"
+FROM landscape."LOCATION" as a INNER JOIN (select  b.GEOM from landscape."NCA" as b where "NCA_ID"=136) as myBox
+ON ST_Intersects(a."GEOM", myBox.GEOM);

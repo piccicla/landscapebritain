@@ -1,0 +1,19 @@
+the API php output the methods configuration to call them, here there is no 
+configuration file, just set up php/api.php file
+
+first you need to set the server classes at row 56 in the php/api.php file, 
+it create the method configuration calling the ExtDirect/API.php and ExtDirect/CacheProvider.php
+
+the method configuration set the url of the router php/router.php
+
+the router accepts requests from the client side route them the the class, method passing
+the arguments
+requests can be via json-encoded raw http post or form post
+the router send back a response json encoded or the error response (should be turn off!!!)
+
+
+
+the app.js file call Ext.direct.Manager.addProvider(Ext.app.REMOTING_API) so that your
+actions will exist in the global namespace
+by including a namespace in the method configuration actions can be namespaced (e.g. Ext.ss)
+

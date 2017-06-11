@@ -1,0 +1,26 @@
+
+Setting text searching for abstract and titles
+
+//add a new column to store the tsvector for the abstract
+alter table landscape."ABSTRACT" add column "TEXTINDEX" tsvector;
+update landscape."ABSTRACT" set "TEXTINDEX"=to_tsvector('english',"TEXT");
+
+//cretae a gin index for the tsvector column
+create index textsearch_idx on landscape."ABSTRACT" using gin("TEXTINDEX");
+
+//create a trigger to update the tsvector when adding a new abstract
+create trigger tsvectorAbstractUpdate before insert or update
+on landscape."ABSTRACT" for each row execute procedure
+tsvector_update_trigger("TEXTINDEX",'pg_catalog.english',"TEXT");
+
+//add a new column to store the tsvector for the abstract
+alter table landscape."ARTICLE" add column "TITLEINDEX" tsvector;
+update landscape."ARTICLE" set "TITLEINDEX"=to_tsvector('english',"TITLE");
+
+//create a gin index for the tsvector column
+create index titlesearch_idx on landscape."ARTICLE" using gin("TITLEINDEX");
+
+//create a trigger to update the tsvector when adding a new abstract
+create trigger tsvectorArticleUpdate before insert or update
+on landscape."ARTICLE" for each row execute procedure
+tsvector_update_trigger("TITLEINDEX",'pg_catalog.english',"TITLE");

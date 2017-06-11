@@ -1,0 +1,35 @@
+boby{
+	background: #ededed
+}
+
+
+
+
+/*icons for grids*/
+
+.add{
+	background: url('images/add.png');
+}
+.delete{
+	background: url('images/delete.png');
+}
+.refresh{
+	background: url('images/refresh.gif');
+}
+/*icons for map*/
+
+.panMap{
+	background: url('images/panBig.png');
+}
+.drawMap{
+	background: url('images/drawPolyBig.png');
+}
+.clearMap{
+	background: url('images/deleteBig.png');
+}
+.updateMap{
+	background: url('images/updateBig.png');
+}
+.endNote{
+	background: url('images/endnote.png');
+}

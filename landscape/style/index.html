@@ -1,0 +1,1009 @@
+<html>
+<head>
+<title>Papers grid</title>
+
+<!--#############css###############-->
+
+<link rel="stylesheet" type="text/css" href="ext-3.2.1/resources/css/ext-all.css" />
+<!-- overrides to base library -->
+<!-- <link rel="stylesheet" type="text/css" href="ext-3.2.1/ux/gridfilters/css/GridFilters.css" />
+<link rel="stylesheet" type="text/css" href="ext-3.2.1/ux/gridfilters/css/RangeMenu.css" /> -->
+<!-- page specific -->
+<link rel="stylesheet" type="text/css" href="ext-3.2.1/shared/examples.css" />
+<style type="text/css">
+.my-panel-class {
+font-family: tahoma,sans-serif;
+}
+.myImage {background-image:url('books/learn extk book/Chapter5/images/cross.png')0 6px no-repeat !important; }
+</style>
+<style type="text/css">
+.zoomIcon {
+    background-image: url(images/zoom5.gif) !important;
+}
+</style>
+<style type="text/css">
+HTML, BODY { height: 100%; }
+#loading-mask {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: #000000;
+     z-index: 1;
+}
+#loading {
+     position: absolute;
+     top: 40%;
+     left: 45%;
+     z-index: 2;
+}
+#loading SPAN {
+     background: url('/images/loader.gif') no-repeat left center;
+     padding: 30px 100px;
+     display: block;
+	 color:blue;
+}
+</style>
+
+<link rel="stylesheet" type="text/css" href="GeoExt/resources/geoext-all-debug.css"></link>
+<!--#############jscript###############-->
+<script src='http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.1'></script>
+<script type="text/javascript">
+		
+//function used to change the text with an image
+function cover_image(val){
+return '<img src="images/' +val+'.gif'+'">';
+}
+
+// main function to render the page
+//Ext.onReady(function(){
+function initialize(){
+	
+	if (Ext.BLANK_IMAGE_URL.substr(0, 5) != 'data:') {
+		Ext.BLANK_IMAGE_URL = 'ext-3.2.1/resources/images/default/s.gif';
+	}
+		
+/////////////////////////////////////////////////////		
+	//bounds to zoom in at the beginning
+	/*var bounds = new OpenLayers.Bounds(
+		-2.51053, 50.6995,
+		-1.8,52.0
+            );*/
+        
+	var proj = new OpenLayers.Projection("EPSG:4326");
+	//options to initialize map
+	
+	var maxExtent = new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508),
+        restrictedExtent = maxExtent.clone(),
+        maxResolution = 156543.0339;
+	
+	    var options = {		
+		projection: new OpenLayers.Projection("EPSG:900913"),
+		displayProjection: new OpenLayers.Projection("EPSG:4326"),
+		units: "m",
+		numZoomLevels: 18,
+		maxResolution: maxResolution,
+		maxExtent: maxExtent,
+		restrictedExtent: restrictedExtent
+		//,controls: [new OpenLayers.Control.PanZoomBar(),new OpenLayers.Control.NavToolbar()]			     
+            };
+	//create the map and add the controls
+	//bounds.transform(proj, options.projection);
+///////////////////////////////////////////////////
+	// create map instance
+	//var map = new OpenLayers.Map();
+	var map = new OpenLayers.Map('map', options); 
+	//map.setCenter(new OpenLayers.LonLat(-2.41053, 50.6).transform(proj, map.getProjectionObject()));
+	
+	//keep note of the mouse position and zooming (necessary for the openlayerss select event!!!)
+	var mouseOnMap=false;
+	var clickOnMap=false;
+	var isZooming=false;
+	map.events.register('mouseover', map, function(evt) {
+		mouseOnMap=true;
+	});
+	map.events.register('mouseout', map, function(evt) {
+		mouseOnMap=false;
+	});
+	
+	map.events.register('zoomend', map, function(evt) {
+		//refresh cluster selection
+		if (isCluster){
+		//check all the clusters
+		//tell you are zooming so selection does not refresh grid
+		isZooming=true;
+		var d = grid.getSelectionModel().getSelections();
+		for(var i = 0, len = d.length; i < len; i++) {	
+			var newFeat=findFeature(d[i].get('ID'));		
+			if(vecLayer.selectedFeatures.indexOf(newFeat) == -1){selectCtrl.select(newFeat);}}
+		//now tell zoom is finished
+		isZooming=false;				
+		}		
+	});
+	
+	
+	//basic base map
+	/*var baseMap = new OpenLayers.Layer.WMS(
+        "vmap0",
+        "http://vmap0.tiles.osgeo.org/wms/vmap0",
+        {layers: 'basic'}
+	);*/
+
+	// open street map 
+	var baseMap=  new OpenLayers.Layer.OSM( " Open Street Map");	
+	/*var baseMap = new OpenLayers.Layer.Google(
+		    "Google Streets", // the default
+		    {'sphericalMercator': true}
+	);*/
+	// create OSM layer
+	 /*   var baseMap = new OpenLayers.Layer.OSM(
+		"OpenStreetMap (Tiles@Home)",
+		"http://tah.openstreetmap.org/Tiles/tile/${z}/${x}/${y}.png"
+	    );*/
+
+	    // create Virtual Earth layers
+	    var veaer = new OpenLayers.Layer.VirtualEarth(
+		" Bing Aerial",
+		{'type': VEMapStyle.Aerial, sphericalMercator: true}
+	    );
+	    var vehyb = new OpenLayers.Layer.VirtualEarth(
+		" Bing Hybrid",
+		{'type': VEMapStyle.Hybrid, sphericalMercator: true}
+	    );
+
+	///////////////style
+	
+	/*var defaultStyle = new OpenLayers.Style({		   
+		   'strokeColor': 'blue',
+                   'strokeWidth': 3,
+                   'cursor': 'pointer'
+
+		   /*'fillOpacity': 0.5,
+		   'fillColor': '#a0ff00'
+		});*/
+        //var sty = OpenLayers.Util.applyDefaults(defaultStyle, OpenLayers.Feature.Vector.style["default"]);
+	//var selectStyle = new OpenLayers.Style({
+	//	  'fillOpacity': 0.5,
+	//	  'fillColor': '#ff0000'
+	//	});
+	//var stySel = OpenLayers.Util.applyDefaults(selectStyle, OpenLayers.Feature.Vector.style["select"]);
+	//var stMap=new OpenLayers.StyleMap({'default': sty, 'select': stySel});
+	
+	
+	var clusterStyle = new OpenLayers.Style({
+		//externalGraphic: "../img/exp.png",
+		//graphicWidth: "${iconSize}",
+		//graphicHeight: "${iconSize}",
+		//label: "${getName}",
+		pointRadius: 6,
+		fillColor: "${col}",
+		fillOpacity: 0.75,
+		strokeColor: "#000000",
+		strokeWidth: 2,
+		strokeOpacity: 0.3,
+		externalGraphic: "${graph}",
+		graphicWidth:25 ,
+		graphicHeight:23
+		}  ,{
+		context: {
+		col: function (feature) {
+			if(isCluster){
+			if(feature.attributes.count >1){ return '#ffff00' } else {return  '#a0ff00'}
+			} else {return  '#a0ff00'}},
+		graph:function (feature) {
+		
+		        if(isCluster){{
+		        if(feature.attributes.count ==1){
+				return 'images/'+feature.cluster[0].attributes.type+'.gif'} else { return ''}
+			}
+			}else {return  ''}}
+		}}
+		);
+		
+	var clusterSelStyle = new OpenLayers.Style({ 
+		fillColor: "#ff0000",
+		strokeColor: "#3399ff",
+		externalGraphic: "${graph}",
+		graphicWidth:25,
+		graphicHeight:23		
+		},{
+		context: {
+		graph:function (feature) {
+		
+		        if(isCluster){
+		        if(feature.attributes.count ==1){
+				return 'images/'+feature.cluster[0].attributes.type+'S.gif'} else { return ''}}			
+			else {return  ''}}
+		}}
+		);
+		
+	var clusterTemp=new OpenLayers.Style({
+		cursor: "pointer",
+		pointRadius: 8,
+		strokeColor: "#ff0000",
+		externalGraphic: "${graph}",
+		graphicWidth:25,
+		graphicHeight:23		
+		},{
+		context: {
+		graph:function (feature) {
+		
+		        if(isCluster){
+		        if(feature.attributes.count ==1){
+				return 'images/'+feature.cluster[0].attributes.type+'H.gif'} else { return ''}}			
+			else {return  ''}}
+		}}
+		);
+	
+	var clusterStyleMap = new OpenLayers.StyleMap({'default': clusterStyle,"temporary":clusterTemp, "select": clusterSelStyle});
+		
+	/////////////////////////////////
+	
+	
+	
+	var strategy = new OpenLayers.Strategy.Cluster();
+	var isCluster=true;
+	// create vector layer
+	var vecLayer = new OpenLayers.Layer.Vector(" Papers", {
+		    strategies: [strategy],
+		    styleMap: clusterStyleMap 
+		    });
+		    
+	// create vector layer
+	//var isCluster=false;
+	//var vecLayer = new OpenLayers.Layer.Vector("vector");
+	//map.addLayers([veaer]);
+	//map.addLayers([baseMap,vecLayer]);
+	map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+	// create map panel
+	 
+	 var  mapPanel = new GeoExt.MapPanel({
+		title: "Map",
+		region: "center",
+		height: 400,
+		width: 600,
+		layers: [baseMap,veaer,vehyb,vecLayer],		
+		center: new OpenLayers.LonLat(-2.2, 51.0).transform(proj, new OpenLayers.Projection("EPSG:900913")),
+		zoom: 8
+	    });
+	    //map.setCenter(new OpenLayers.LonLat(-2.41053, 50.6).transform(proj, map.getProjectionObject()));
+	    mapPanel.map=map;
+	    //map.setCenter(new OpenLayers.LonLat(-2.41053, 50.6).transform(proj, map.getProjectionObject()));
+	    
+	/*var mapStore = new GeoExt.data.LayerStore({
+        map: map,
+        layers: [veaer]
+	});*/
+   
+
+	//****************debug*************************
+	//var point=new OpenLayers.Geometry.Point( -2.51053,50.6995);
+	//var featurePoint=new OpenLayers.Feature.Vector(point);	
+	//vecLayer.addFeatures([featurePoint]);
+	//**********************************************
+	
+	// create record to store in-memory data
+	var papers=Ext.data.Record.create([
+				'ID',
+				'author',
+				'year',
+				'title',
+				'type',
+				'journal',
+				'pages',
+				'vol',
+				'lat',
+				'lon',
+				'file',
+				'doi'
+			]);
+	
+	//create a data store using a remote database 
+	var storeJsPapers = new Ext.data.GroupingStore({
+		url: 'select3.php',
+		sortInfo: {
+		field: 'type',
+		direction: "ASC"
+		},
+		groupField: 'type',
+		reader: new Ext.data.JsonReader({
+		root:'rows',
+		totalProperty: 'results',
+		idProperty:'id'
+		}, papers)
+		//,autoLoad: true
+		});	
+	var query='select3.php';
+
+		// listen to first load to create markers
+		/*var firstLoad=true
+		storeJsPapers.on('load',function(t, records, options) {
+		    if(firstLoad){
+		    for (var i=0; i<records.length; i++) {
+			console.log(String.format('record {0} = {1}', i, records[i].data.ID));
+			point=new OpenLayers.Geometry.Point( records[i].data.lon,records[i].data.lat);
+			featurePoint=new OpenLayers.Feature.Vector(point);	
+			vecLayer.addFeatures([featurePoint]);			
+			} 
+			    firstLoad=false} 				
+		})*/	
+	
+	// load the geoJson file containing map points, project them to Spherical Mercator	
+	OpenLayers.loadURL('geoJson.txt', {}, null, function(r) {
+		     var p = new OpenLayers.Format.GeoJSON(
+		     {
+			'internalProjection': new OpenLayers.Projection("EPSG:900913"),
+			'externalProjection': new OpenLayers.Projection("EPSG:4326")
+		     }		     
+		     );
+		     var f = p.read(r.responseText);
+		     vecLayer.addFeatures(f);
+		}); 
+	
+			
+	//**************DEBUG FUNTIONS************** 
+	var report = function(e) {
+	//OpenLayers.Console.log(e.type, e.feature.id);		
+		document.getElementById('debugCoordinates').innerHTML ="<b>type: " + e.type+ " id: "+e.feature.attributes.ID+"<b/>" ;
+	};
+	
+	//function called when select point on the map
+	var selectedF = function(e) {
+	//OpenLayers.Console.log(e.type, e.feature.id);		
+	document.getElementById('debugCoordinates').innerHTML ="<b> type: " + e.type+ " id: "+e.feature.id+"<b/>" ;
+	//TODO select in grid
+	
+	//refresh the grid only when click on the map and you are not zooming
+	if(mouseOnMap==true && isZooming==false){
+	
+		clickOnMap=true;
+		
+		//if there is clustering the query is different
+		if(isCluster){
+		var q=e.feature.cluster[0].attributes.ID;
+		for(var i = 1, len = e.feature.attributes.count; i < len; i++) {	
+					q += " or ID="+ e.feature.cluster[i].attributes.ID;
+		}
+		storeJsPapers.baseParams = {
+		     pattern: q		    
+		  };
+		} 		
+		else{		
+		storeJsPapers.baseParams = {
+		     pattern: e.feature.attributes.ID		    
+		  };
+		}
+		storeJsPapers.proxy.conn.url ='selectPoint.php';
+		query='selectPoint.php';
+		storeJsPapers.load({
+		  params:  {
+		    start: 0,
+		    limit: 20
+		  }
+		});
+		
+				
+		//grid.getSelectionModel().selectFirstRow();
+		
+		}
+	
+	//TODO show text
+	
+	
+	
+	};
+	//************************************
+	//highlight features when hovering
+	var highlightCtrl = new OpenLayers.Control.SelectFeature(vecLayer, {
+		hover: true,
+		highlightOnly: true,
+		renderIntent: "temporary",
+		eventListeners: {
+		    beforefeaturehighlighted: report,
+		    featurehighlighted: report,
+		    featureunhighlighted: report
+		}
+	});
+	
+	//select features and call the selectedF function
+	vecLayer.events.register("featureselected", vecLayer, selectedF);
+	var selectCtrl = new OpenLayers.Control.SelectFeature(vecLayer,
+		{clickout: true,
+		 multiple: false}
+	);
+	
+
+	
+	//add highlight and select functionalities to the map
+	map.addControl(highlightCtrl);
+	map.addControl(selectCtrl);
+	highlightCtrl.activate();
+	selectCtrl.activate();
+		
+
+	// Ext.QuickTips.init();
+	// for this demo configure local and remote urls for demo purposes
+	//var url = {
+		//local:  'grid-filter.json',  // static data file
+		//remote: 'grid-filter.php'
+	//};
+
+	// configure whether filter query is encoded or not (initially)
+	//var encode = false;
+	    
+	// configure whether filtering is performed locally or remotely (initially)
+	///var local = true;
+
+	//create a gridpanel to visualize data
+	var grid = new Ext.grid.GridPanel({
+		//renderTo: Ext.getBody(),
+		//frame: true,
+		//title: 'Papers',
+		height: 200,
+		//width: 520,
+		store: storeJsPapers,
+		autoExpandColumn: 'title',
+		colModel: new Ext.grid.ColumnModel({
+		defaultSortable: true,
+		columns: [
+		//{header: "Id", dataIndex: 'ID'},
+		{header: "Source", dataIndex: 'type', renderer:cover_image},
+		{header: "Title", dataIndex: 'title', groupable:false},
+		{header: "Author", dataIndex: 'author', groupable:false},
+		{header: "Year", dataIndex: 'year', groupable:false},
+		{header: "Journal", dataIndex: 'journal',groupable:false, hidden:true},
+		{header: "Vol", dataIndex: 'vol',groupable:false, hidden:true},
+		{header: "Pages", dataIndex: 'pages',sortable:false,groupable:false, hidden:true}
+		//{header: "Lat", dataIndex: 'lat',sortable:false,groupable:false},
+		//{header: "Lon", dataIndex: 'lon',sortable:false,groupable:false},
+		]}),
+		/*sm: new Ext.grid.RowSelectionModel({
+			singleSelect: true,
+			listeners: {
+			rowselect: function(sm, index, record) {
+			Ext.Msg.alert('You Selected',record.get('title'));
+			}
+			}
+		})*/
+		sm: new GeoExt.grid.FeatureSelectionModel(),
+		//layout to present grouped data
+		view: new Ext.grid.GroupingView({
+		forceFit: true,
+		groupTextTpl: '{gvalue} - {[values.rs.length]} {[values.rs.length > 1 ? "Items" : "Item"]}'
+		}),
+		//create a footer to change page
+		bbar: new Ext.PagingToolbar({
+			pageSize: 100,
+			store: storeJsPapers,
+			listeners:{
+			// when changing page delete the selections
+			'beforechange': function (a,b){
+			
+						//specify the correct query
+						storeJsPapers.proxy.conn.url =query;
+						
+						//delete the selected points of the grid
+						deletePoints();
+			}}}),	
+		split: true,
+		region: 'north'
+	})  //end GridPnel
+	
+	
+function deletePoints(){			
+	//delete the selected points of the grid
+		var d = grid.getSelectionModel().getSelections();
+		
+		if(isCluster){
+		for(var i = 0, len = d.length; i < len; i++) {	
+			var newFeat=findFeature(d[i].get('ID'));		
+			if(vecLayer.selectedFeatures.indexOf(newFeat) != -1){selectCtrl.unselect(newFeat);}}
+		}else{
+		for (var i=0; i< d.length; i++) {
+		if(vecLayer.selectedFeatures.indexOf(vecLayer.getFeatureByFid(d[i].get('ID'))) != -1) {						
+			selectCtrl.unselect(vecLayer.getFeatureByFid(d[i].get('ID')));			
+		}}}
+		//now delete the selected points on the map 
+		for(var i = 0, len = vecLayer.selectedFeatures.length; i < len; i++) {	
+		if(vecLayer.selectedFeatures.indexOf(vecLayer.selectedFeatures[i]) != -1) {						
+			selectCtrl.unselect(vecLayer.selectedFeatures[i]);
+		}}
+}
+
+// add some buttons to grid bottom ( todo: add functionality)
+grid.getBottomToolbar().add([
+        '->',
+        new Ext.Toolbar.Button({
+            //text: 'Encode: ' + (encode ? 'On' : 'Off'),
+	    //text: '<b>Zoom to</b>',	    
+	    iconCls: 'zoomIcon ',
+            //tooltip: 'Toggle Filter encoding on/off',
+            //enableToggle: true
+            /*,handler: function (button, state) {
+                var encode = (grid.filters.encode===true) ? false : true;
+                var text = 'Encode: ' + (encode ? 'On' : 'Off'); 
+                
+		// remove the prior parameters from the last load options
+                grid.filters.cleanParams(grid.getStore().lastOptions.params);
+                grid.filters.encode = encode;
+                button.setText(text);
+                grid.getStore().reload();*/
+		handler: function (button, state) {
+		var data = grid.getSelectionModel().getSelections();
+		
+		if(data[0] == undefined){}else{
+		var minX=data[0].get('lon');
+		var maxX=data[0].get('lon');
+		var minY=data[0].get('lat');
+		var maxY=data[0].get('lat');
+		
+		if(data.length >1){
+		
+		for (var i=1; i< data.length; i++) {		
+			if(data[i].get('lon')<minX){minX=data[i].get('lon')}
+			if(data[i].get('lon')>maxX){maxX=data[i].get('lon')}
+			if(data[i].get('lat')<minY){minY=data[i].get('lat')}
+			if(data[i].get('lat')>maxY){maxY=data[i].get('lat')}
+		}
+		 //alert( "minX: "+minX+ " maxX: "+maxX+" minY: "+minY+ " maxY: "+maxY);
+		document.getElementById('debugCoordinates').innerHTML = "<b>minX: "+minX+ " maxX: "+maxX+" minY: "+minY+ " maxY: "+maxY+"<b/>";
+		//TODO: call function to zoom a rectangle
+		mnX=parseFloat(minX)-0.125;
+		mnY=parseFloat(minY)-0.125;
+		mxX=parseFloat(maxX)+0.125;
+		mxY=parseFloat(maxY)+0.125;
+		var bounds=new OpenLayers.Bounds(mnX,mnY,mxX,mxY);
+		bounds.transform(proj, map.getProjectionObject());
+		map.setCenter(bounds.getCenterLonLat(),map.getZoomForExtent(bounds));
+		
+		//reselect if you are  clustering
+		if (isCluster){
+		
+		for (var i=0; i< data.length; i++) {	
+		//check all the clusters
+		var newFeat=findFeature(data[i].get('ID'));		
+		if(vecLayer.selectedFeatures.indexOf(newFeat) == -1){
+			selectCtrl.select(newFeat);}	}}			
+		} else {
+		//alert( "X: " + minX+ " Y: "+minY);
+		document.getElementById('debugCoordinates').innerHTML ="<b>X: " + minX+ " Y: "+minY+"<b/>" ;
+		 map.setCenter(new OpenLayers.LonLat(minX,minY).transform(proj, map.getProjectionObject()),10);
+		//map.panTo(new OpenLayers. LonLat(minX,minY));
+		
+		//reselect if you are  clustering
+		if (isCluster){
+		//check all the clusters
+		var newFeat=findFeature(data[0].get('ID'));		
+		if(vecLayer.selectedFeatures.indexOf(newFeat) == -1){
+			selectCtrl.select(newFeat);}	}		
+		}
+		}		
+	  }		 
+        })
+	/*,{
+            text: 'Local Filtering: ' + (local ? 'On' : 'Off'),
+            //tooltip: 'Toggle Filtering between remote/local',
+            enableToggle: true
+            /*,handler: function (button, state) {
+                var local = (grid.filters.local===true) ? false : true;
+                var text = 'Local Filtering: ' + (local ? 'On' : 'Off');
+                var newUrl = local ? url.local : url.remote;
+                 
+                // update the GridFilter setting
+                grid.filters.local = local;
+                // bind the store again so GridFilters is listening to appropriate store event
+                grid.filters.bindStore(grid.getStore());
+                // update the url for the proxy
+                grid.getStore().proxy.setApi('read', newUrl);
+
+                button.setText(text);
+                grid.getStore().reload();
+            } 
+        }*/
+	/*,{
+            text: 'All Filter Data'
+            //tooltip: 'Get Filter Data for Grid'
+            /*,handler: function () {
+                var data = Ext.encode(grid.filters.getFilterData());
+                Ext.Msg.alert('All Filter Data',data);
+            } 
+        }*/
+	/*,{
+            text: 'Clear Filter Data'
+            /*,handler: function () {
+                grid.filters.clearFilters();
+            } 
+        }*//*,{
+            text: 'Reconfigure Grid'
+            /*,handler: function () {
+                grid.reconfigure(store, createColModel(6));
+            }
+        }  */   
+    ]);
+
+
+// define a template to use for the detail view when pdf is available
+var paperTplMarkupPdf = [
+		'Title: <a href="pdf/{file}.pdf" target="_blank">{title}</a><br/>',
+		'Author: {author}<br/>',
+		'Source: {year}, {journal}, {vol}, p.{pages} <br/>',
+		'Latitude:{lat} Longitude: {lon}'
+	];
+// define a template to use for the detail view when DOI is available (database file field is "")
+var paperTplMarkupDoi = [		
+		'Title: <a href="{doi}" target="_blank">{title}</a><br/>',
+		'Author: {author}<br/>',
+		'Source: {year}, {journal}, {vol}, p.{pages} <br/>',
+		'Latitude:{lat} Longitude: {lon}'
+	];		
+var paperTplPdf = new Ext.Template(paperTplMarkupPdf);
+var paperTplDoi = new Ext.Template(paperTplMarkupDoi);
+
+//create a panel to store grid, detail view
+var ct = new Ext.Panel({
+		//renderTo: Ext.getBody(),
+		frame: true,
+		title: 'Papers',
+		width: 520,
+		height: 400,
+		layout: 'border',
+		collapsible: false,
+		items: [
+			grid,
+			{
+				id: 'detailPanel',
+				region: 'center',
+				split: true,
+				bodyStyle: {
+					background: '#ffffff',
+					padding: '7px'
+				},
+				html: 'Please select a paper to see additional details.'				
+			}/*,
+			{
+				id: 'searchPanel',
+				region: 'south',
+				bodyStyle: {
+					background: '#ffffff',
+					padding: '7px'
+				}
+			}*/			
+		]
+	}) //end Panel
+
+
+var mypanel = new Ext.form.FormPanel({      
+		 //renderTo: Ext.getBody(),
+		 frame:true,
+		 region: "west",
+         bodyStyle:'padding: 5px 5px 0',
+         xtype: 'form',
+         id:'asset-form',
+         layout: 'hbox',
+         frame: true,
+         collapsible: true,
+         autoHeight:true,
+         width: 550,
+           items: [ ct ],
+               tbar: [new Ext.Toolbar.TextItem ("Search For:"),
+                  {xtype:'textfield',
+                    fieldLabel:'Search',
+                    name: 'pattern',
+                    id:'pattern'/*,
+                    listeners: {
+                 //listen for the ENTER key, same as if the user clicks the search button
+                   'render': function(c) {
+                      c.getEl().on('keypress', function(e) {
+                      if(e.getKey() == e.ENTER && this.getValue().length > 0) {
+                      mydatastore.baseParams = {
+                      pattern: document.getElementById('pattern').value
+                                               };
+                         mydatastore.load({
+                             params:{
+                                start: 0,
+                               limit: 150
+                                    }
+                                                });
+                                            }
+                                              },
+                       Ext.QuickTips.register({
+                            target: c.getEl(),
+                            text: 'If searching for date,<br/>\n\
+                           \n\ format must be mm/dd/yy'
+                                       }),
+                                        c);
+                                  }
+
+                           }*/
+                               },
+
+                      {xtype:'tbseparator'},new Ext.Toolbar.Button({
+                         text: 'Search',
+                         iconCls:'search-icon',
+                      	handler: function search_submit() {
+				deletePoints();
+				//specify the correct query
+				storeJsPapers.proxy.conn.url ='select3.php';
+				query='select3.php';
+                                storeJsPapers.baseParams = {
+                                     pattern: document.getElementById('pattern').value
+                                  };
+                                storeJsPapers.load({
+                                  params:  {
+                                    start: 0,
+                                    limit: 100
+                                  }
+                                });
+                              }
+                          }),
+                      {xtype:'tbseparator'},
+                      new Ext.Toolbar.Button({
+                         text: 'Reset Search',
+                         iconCls:'reload-icon',
+                      	handler: function() {
+				deletePoints();
+				var s = Ext.getCmp('pattern');
+				s.setValue('');
+				//specify the correct query
+				storeJsPapers.proxy.conn.url ='select3.php';
+				query='select3.php';
+				storeJsPapers.baseParams = {
+                                     pattern: document.getElementById('pattern').value
+                                  };
+                                storeJsPapers.load({
+                                  params:  {
+                                    start: 0,
+                                    limit: 100
+                                  }
+                                });
+                                 }
+                      })]
+
+            });
+	    
+// create a panel and add the map panel and grid panel
+// inside it
+    mainPanel = new Ext.Panel({
+        renderTo: "gxmap",
+        layout: "border",
+        height: 450,
+        width: 920,
+        items: [mapPanel, mypanel]
+    });
+	//mainPanel.doLayout();
+//check if an element in in an array, if true return true
+function include(arr, obj) {
+  for(var i=0; i<arr.length; i++) {
+    if (arr[i] == obj) {return false;}
+     else { return true;}
+}}
+
+
+//variable to store number of selected
+var selec=0;
+var selecInd=0;
+
+// when  the user choose a row show detail view
+grid.getSelectionModel().on('rowselect', function(sm, rowIdx, r) {
+		
+		
+		//document.getElementById('debugLayer2').innerHTML +="selecting "+selec ;	
+		
+		
+		var detailPanel = Ext.getCmp('detailPanel');
+		//Ext.Msg.alert("ciao",r.data.file + " "+r.data.doi);
+		if(r.data.file ==""){ paperTplDoi.overwrite(detailPanel.body, r.data);}
+		else{paperTplPdf.overwrite(detailPanel.body, r.data);}			
+		//Ext.Msg.alert("ciao",r.data.author);
+		
+		//var d = grid.getSelectionModel().getSelections();
+		//document.getElementById('debugCoordinates').innerHTML ="" ;	
+		
+		//document.getElementById('debugLayer').innerHTML ="unselecting" +"vecLayer.selectedFeatures.length"+ "<br/>" ;	
+		//unselect all selected features
+		
+		 /*for(var i = 0, len = vecLayer.selectedFeatures.length; i < len; i++) {
+			document.getElementById('debugLayer').innerHTML +="<b> ID: " + vecLayer.selectedFeatures[i].attributes.ID + "<b/>" ;
+			selectCtrl.unselect(vecLayer.selectedFeatures[i]);			
+			}*/		
+		
+		if (isCluster){
+		//check all the clusters
+		var newFeat=findFeature(r.data.ID);		
+		if(vecLayer.selectedFeatures.indexOf(newFeat) == -1){
+			selectCtrl.select(newFeat);}	}		
+		else{		
+		if(vecLayer.selectedFeatures.indexOf(vecLayer.getFeatureByFid(r.data.ID)) == -1){
+			selectCtrl.select(vecLayer.getFeatureByFid(r.data.ID));}	}	
+		/*
+		if(d.length >1){
+		for (var i=(0+selec); i< d.length; i++) {		
+			d[i].get('ID');
+			document.getElementById('debugCoordinates').innerHTML +="<b> ID: "+d[i].get('ID');
+			//select the feature on the map
+			
+			if(vecLayer.selectedFeatures.indexOf(vecLayer.getFeatureByFid(d[i].get('ID'))) == -1){
+			selectCtrl.select(vecLayer.getFeatureByFid(d[i].get('ID')));}			
+
+			}
+
+			}//if
+			
+		else	{
+			document.getElementById('debugCoordinates').innerHTML ="<b> ID: " + r.data.ID +" "+rowIdx+ "<b/>" ;
+			//select the feature on the map
+			//vecLayer.redraw();
+		 //unselect all selected features
+		 for(var i = 0, len = vecLayer.selectedFeatures.length; i < len; i++) {
+			selectCtrl.unselect(vecLayer.selectedFeatures[i]);
+			}						
+			selectCtrl.select(vecLayer.getFeatureByFid(r.data.ID));
+			}
+		document.getElementById('debugLayer').innerHTML +="<b> number selected features: "+vecLayer.selectedFeatures.length	
+		*/
+})
+
+//function returning the cluster in which the feature with the ID is
+function findFeature(id) {
+ //browse all the clusters
+ for(var i = 0, len = vecLayer.features.length; i < len; i++) {
+	//browse features inside cluster
+	for(var j = 0, len2 = vecLayer.features[i].attributes.count; j < len2; j++) {
+		 if (vecLayer.features[i].cluster[j].attributes.ID == id) {
+			return vecLayer.features[i];
+		 }
+	}	
+ }
+ return null;
+}
+
+
+// when  the user choose a row show detail view
+grid.getSelectionModel().on('rowdeselect', function(sm, rowIdx, r) {
+		if (isCluster){
+		var newFeat=findFeature(r.data.ID);	
+		if(vecLayer.selectedFeatures.indexOf(newFeat) != -1) {
+                        selectCtrl.unselect(newFeat);}
+		}
+		else{if(vecLayer.selectedFeatures.indexOf(vecLayer.getFeatureByFid(r.data.ID)) != -1) {
+                        selectCtrl.unselect(vecLayer.getFeatureByFid(r.data.ID));}}						
+})
+
+// select the description when user select on map
+grid.getStore().on('load', function(a, b,c) {		
+	//check if you are on the map
+	if(clickOnMap){
+	grid.getSelectionModel().selectFirstRow();	
+	clickOnMap=false;
+	}
+})
+
+		
+
+//initialize the grid with the first page
+grid.getBottomToolbar().changePage(1);
+
+
+//document.getElementById('debugCoordinates').innerHTML = storeJsPapers.getCount() ;
+//document.getElementById('debugCoordinates').innerHTML +=" "+storeJsPapers.getAt(0).get('lon') ;
+
+//storeJsPapers.on('load ', function(stor, rec, opt) {
+//TODO fire this only the first time
+//document.getElementById('debugCoordinates').innerHTML = "loaded!";
+
+//create points
+/*var point=new OpenLayers.Geometry.Point( -2.51053,50.6995);
+var featurePoint=new OpenLayers.Feature.Vector(point);	
+vecLayer.addFeatures([featurePoint]);
+});*/
+
+/*for (var i=0; i< storeJsPapers.getCount() ; i++) {
+	//storeJsPapers.getAt(i).get("lon");
+	//storeJsPapers.getAt(i).get("lat");
+	var point=new OpenLayers.Geometry.Point( storeJsPapers.getAt(i).get("lon"),storeJsPapers.getAt(i).get("lat"));
+	var featurePoint=new OpenLayers.Feature.Vector(point);	
+	vecLayer.addFeatures([featurePoint]);
+}*/
+
+
+// function to show info (this is only for exercice)
+/*grid.getColumnModel().on('columnmoved',
+function(cm,oindex,nindex) {
+	var title = 'You Moved '+cm.getColumnHeader(nindex);
+	if (oindex > nindex){
+	var dirmsg = (oindex-nindex)+' Column(s) to the Left';
+	}else{
+	var dirmsg = (nindex-oindex)+' Column(s) to the Right';
+	}
+	Ext.Msg.alert(title,dirmsg);
+});*/
+
+
+var loadingMask = Ext.get('loading-mask');
+     var loading = Ext.get('loading');
+     //  Hide loading message
+     loading.fadeOut({ duration: 1.0, remove: true });
+     //  Hide loading mask
+     loadingMask.fadeOut({ duration: 1.0, remove: true });
+     
+     /*loadingMask.setOpacity(0.9);
+	loadingMask.shift({
+          xy: loading.getXY(),
+          width: loading.getWidth(),
+          height: loading.getHeight(),
+          remove: true,
+          duration: 1,
+          opacity: 0.1,
+          easing: 'bounceOut'
+     });*/
+
+}; // end initialize()
+
+
+</script>
+</head>
+<body>
+<div id="loading-mask"></div>
+     <div id="loading">
+          <span id="loading-message">Loading. Please wait...</span>
+</div>
+<script type="text/javascript">
+     document.getElementById('loading-message').innerHTML = 'Loading Core API...';
+</script>
+<script src="ext-3.2.1/adapter/ext/ext-base.js"></script>
+<script type="text/javascript">
+     document.getElementById('loading-message').innerHTML = 'Loading Extj 3.3...';
+</script>
+<script src="ext-3.2.1/ext-all-debug.js"></script>
+
+<!-- overrides to base library -->
+
+<!-- extensions -->
+<!--<script type="text/javascript">
+     document.getElementById('loading-message').innerHTML = 'Loading Extj libraries...';
+</script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/menu/RangeMenu.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/menu/ListMenu.js"></script>
+
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/GridFilters.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/Filter.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/StringFilter.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/DateFilter.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/ListFilter.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/NumericFilter.js"></script>
+<script type="text/javascript" src="ext-3.2.1/ux/gridfilters/filter/BooleanFilter.js"></script>-->
+
+<!-- page specific -->
+
+<!--<script type="text/javascript" src="ext-3.2.1/shared/examples.js"></script>
+<script type="text/javascript">-->
+
+<script type="text/javascript">
+     document.getElementById('loading-message').innerHTML = 'Loading OpenLayers...';
+</script>
+<script src="openlayers-2.10/OpenLayers.js"></script>
+
+
+<!--geoextj libraries-->
+
+<script type="text/javascript">
+     document.getElementById('loading-message').innerHTML = 'Loading GeoExt...';
+</script>
+<script src="GeoEx1.0/lib/GeoExt.js" type="text/javascript"></script>
+<script type="text/javascript">
+Ext.onReady(function(){
+initialize();
+});
+</script>
+<div><b> WORK IN PROGRESS........ implement styles<b/> </div>
+<div></div>
+<div id="gxmap"></div>
+<br/>
+<div id="debugCoordinates"></div>
+<div id="debugLayer"></div>
+<div id="debugLayer2"></div>
+
+</body>
+</html>

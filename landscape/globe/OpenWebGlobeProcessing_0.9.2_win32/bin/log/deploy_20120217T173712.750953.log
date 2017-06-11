@@ -1,0 +1,15 @@
+[2012-Feb-17 17:37:12]: Logging started
+[2012-Feb-17 17:37:12] ERROR: Wrong parameters!
+[2012-Feb-17 17:37:12]: 
+Program-Options:
+  --layer arg           name of layer to add the data
+  --outpath arg         where to write the data (path must exist!)
+  --type arg            [optional] image (default) or elevation.
+  --archive             [optional] create deployment in tar archive. (One 
+                        archive per thread)
+  --format arg          [optional] elevation: json (default), image: 
+                        png(default)|jpg
+  --quality arg         [optional] jpeg image quality in the range 0-100 (0 is 
+                        worst quality and 100 is best).
+  --numthreads arg      [optional] force number of threads
+

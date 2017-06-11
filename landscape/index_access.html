@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BSG Landscape</title>
+	<!-- extjs -->
+    <link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all-access.css">
+	<link rel="stylesheet" type="text/css" href="style/style_access.css">
+	<link rel="stylesheet" type="text/css" href="style/data-view.css" />
+	<!-- openLayers -->
+	<link rel="stylesheet" href="OpenLayers/theme/default/style.css" type="text/css">
+    <!-- <link rel="stylesheet" href="style/styleMap.css" type="text/css">-->
+	<style type="text/css">
+            #loading-mask {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #000000;
+                z-index: 1;
+            }
+            
+            #loading {
+                position: absolute;
+                top: 40%;
+                left: 45%;
+                z-index: 2;
+            }
+            
+            #loading SPAN {
+                background: url('img/loader1.gif') no-repeat left center;
+                padding: 30px 100px;
+                display: block;
+                color: blue;
+            }
+    </style>	
+	</head>
+<body>
+		<div id="load">
+			<div id="loading-mask">
+			</div>
+			<div id="loading">
+				<span id="loading-message">Loading. Please wait...</span>
+			</div>
+			<script type="text/javascript">
+				document.getElementById('loading-message').innerHTML = 'Loading Extj 4.1 API...';
+			</script>
+			<script type="text/javascript" src="extjs/ext.js"></script>
+			<script type="text/javascript">
+				document.getElementById('loading-message').innerHTML = 'Loading Application code...';
+			</script>
+			<script type="text/javascript" src="app/controller/bsg.js"></script>
+			<script type="text/javascript" src="php/api.php"></script>
+			<script type="text/javascript" src="app-all.js"></script>	
+			<script type="text/javascript">
+				document.getElementById('loading-message').innerHTML = 'Loading OpenLayers API...';
+			</script>
+			<script type="text/javascript" src="OpenLayers/myOpenLayers.js"></script>	
+			<script type="text/javascript">
+				document.getElementById('loading-message').innerHTML = 'Initialize UI...';
+			</script>
+		</div>
+</body>
+</html>

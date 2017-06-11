@@ -1,0 +1,12 @@
+[2012-Feb-17 17:37:16]: Logging started
+[2012-Feb-17 17:37:16] ERROR: Wrong parameters!
+[2012-Feb-17 17:37:16]: 
+Program-Options:
+  --layer arg           image layer to resample
+  --type arg            [optional] image (default) or elevation, or point.
+  --maxpoints arg       [optional] for elevation layer: max number of points 
+                        per tile. Default is 512.
+  --numthreads arg      force number of threads
+  --verbose             optional info
+  --pointfile           generate file with thinned out points
+

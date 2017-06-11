@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>BSG Landscape</title>
+	<!-- extjs -->
+	<!-- openLayers -->
+	<link rel="stylesheet" href="OpenLayers/theme/default/style.css" type="text/css">
+	<script type="text/javascript" src="OpenLayers/myOpenLayers.js"></script>	
+	<script type="text/javascript">
+		function init(){
+			
+			var proj = new OpenLayers.Projection("EPSG:4326");
+			var proj900913=new OpenLayers.Projection("EPSG:900913");
+			var geojson_format = new OpenLayers.Format.GeoJSON({
+                        'internalProjection': new OpenLayers.Projection("EPSG:900913"),
+                        'externalProjection': new OpenLayers.Projection("EPSG:4326")
+			});
+			
+			var maxExtent = new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508), restrictedExtent = maxExtent.clone(), maxResolution = 156543.0339;
+			
+			var options = {
+				projection: new OpenLayers.Projection("EPSG:900913"),
+				displayProjection: new OpenLayers.Projection("EPSG:4326"),
+				units: "m",
+				numZoomLevels: 18,
+				maxResolution: maxResolution,
+				maxExtent: maxExtent,
+				restrictedExtent: restrictedExtent			     
+			};
+			
+			var map= new OpenLayers.Map("mappa",options);
+			
+			var baseMap = new OpenLayers.Layer.OSM("Open Street Map");
+			
+						//////////////
+			//layer NCA degug
+			var styleNCA = new OpenLayers.Style({
+			strokeColor: "red",
+			strokeOpacity: 1,
+			strokeWidth: 1,
+			//fillColor: "#FF5500",
+			fillOpacity: 0.0,
+			pointRadius: 6,
+			pointerEvents: "visiblePainted"
+					// label with \n linebreaks		
+				}, {
+					rules: [
+							new OpenLayers.Rule({
+								minScaleDenominator: 2500000,
+								symbolizer: {
+									//pointRadius: 7,
+									//fontSize: "9px"
+								}
+							}),
+							new OpenLayers.Rule({
+								maxScaleDenominator: 2500000,
+								symbolizer: {
+									/*label : "${NAME}",
+									fontColor: "red",
+									fontSize: "10px",
+									fontFamily: "Courier New, monospace",
+									fontWeight: "bold",
+									//labelAlign: "${align}",
+									//labelXOffset: "${xOffset}",
+									//labelYOffset: "${yOffset}",
+									labelOutlineColor: "black",
+									labelOutlineWidth: 5*/
+								}
+							})
+						]
+				});
+					
+			var nca=new OpenLayers.Layer.Vector('NationalCharacterAreas',{
+					styleMap: new OpenLayers.StyleMap({'default':styleNCA
+							})
+			});
+			//limit the geometry for this layer
+			//nca.geometryType=OpenLayers.Geometry.MultiPolygon;
+			//nca.setVisibility(false);
+					
+			var selectCtrl = new OpenLayers.Control.SelectFeature(nca,
+                {
+				//hover:true,
+				//highlightOnly:true,
+				clickout: true,
+				onUnselect:function(feature){document.getElementById('info').innerHTML ='';document.getElementById('text').innerHTML =''},
+				onSelect:function(feature){document.getElementById('info').innerHTML = feature.attributes.NAME;
+				
+				loadText(Math.floor(Math.random()*10)+'.html')
+				console.log(feature);
+				
+				
+				
+				}}
+            );
+			map.addControl(selectCtrl);
+			selectCtrl.activate();
+			
+			//add layers and deactivate the bbox strategy
+			map.addLayers([baseMap,nca]);
+			map.setCenter(new OpenLayers.LonLat(-2.0, 53.50).transform(proj,proj900913),6);
+			//zoomToExtent: function(	new OpenLayers.Bounds(l,b,r,t), false)
+			
+			//load layer
+			
+			OpenLayers.Request.GET({
+				url:"data/NationalCharacterAreas.geojson",
+				success:function(r){
+					map.getLayersByName('NationalCharacterAreas')[0].addFeatures(geojson_format.read(r.responseText));	
+					map.zoomToExtent(map.getLayersByName('NationalCharacterAreas')[0].getExtent());
+					document.getElementById('info').innerHTML = '';
+				},
+				failure:function(r){
+					document.getElementById('info').innerHTML = 'problems downloading the file...';
+				}
+			});			
+		};
+		
+		function loadText(name){
+			OpenLayers.Request.GET({
+					url:'data/ncafiles/'+name,
+					success:function(r){
+						document.getElementById('text').innerHTML = r.responseText;
+					},
+					failure:function(r){
+						document.getElementById('text').innerHTML = 'problems downloading the file...';
+					}
+				});	
+		};
+		
+	</script>
+	</head>
+<body onload="init()">
+<table border="1" style="width:800px;height:600px">
+<tr style="height:50px">
+<td id="info" style="padding:6px" align="center">Loading NCA layer</td>
+<td  rowspan="2" style="width:50%;padding:6px"><div id="text" style="height:600px;overflow:auto"></div></td>
+</tr>
+<tr>
+<td style="height:550px" id="mappa"></td>
+</tr>
+</table>
+</body>
+</html>

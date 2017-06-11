@@ -1,0 +1,7 @@
+Description:
+Bugaboo Provincial Park, British Columbia, Canada
+
+Source:
+Produced by Tyler Mitchell and Will Cadell, Timberline Forest Inventory Consultants, British Columbia, Canada.  From DEM and a fused Landsat texture based on data from http://geobase.ca.
+
+Source data is all 100% freely available data.

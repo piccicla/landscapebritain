@@ -1,0 +1,19 @@
+[2012-Feb-17 17:37:09]: Logging started
+[2012-Feb-17 17:37:09] ERROR: layer name is not specified!
+[2012-Feb-17 17:37:09] ERROR: lod not specified!
+[2012-Feb-17 17:37:09] WARNING: It is highly recommended to use --type! Using default --type image
+[2012-Feb-17 17:37:09] ERROR: extent must be defined with 4 values (Tile Coords): x0 y0 x1 y1
+[2012-Feb-17 17:37:09] ERROR: Wrong parameters!
+[2012-Feb-17 17:37:09]: 
+Program-Options:
+  --name arg            layer name (string)
+  --lod arg             desired level of detail (integer)
+  --extent arg          tile boundary (tx0 ty0 tx1 ty1) for elevation/image 
+                        data
+  --boundary arg        WGS84 boundary for point data
+  --force               [optional] force creation. (Warning: if this layer 
+                        already exists it will be deleted)
+  --numthreads arg      [optional] force number of threads
+  --type arg            [optional] layer type. This can be image, elevation, 
+                        poi, point, geometry. image is default value.
+

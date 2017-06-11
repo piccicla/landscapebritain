@@ -1,0 +1,172 @@
+/* help links colors*/
+a.layout:link {color:white;text-decoration: none;}    /* unvisited link */
+a.layout:visited {color:white;text-decoration: none;} /* visited link */
+a.layout:hover {color:red;text-decoration: none;}   /* mouse over link */
+/*icons for grids*/
+.add{
+	background: url('add.png');
+}
+.delete{
+	background: url('delete.png');
+}
+.refresh{
+	background: url('refresh.gif');
+}
+.refresh2{
+	background: url('refresh2.gif');
+}
+/*icons for map*/
+
+.panMap{
+	background: url('panBig.png');
+}
+.drawMap{
+	background: url('drawPolyBig.png');
+}
+.clearMap{
+	background: url('deleteBig.png');
+}
+.updateMap{
+	background: url('updateBig.png');
+}
+.endNote{
+	background: url('endnote.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/map-icon.html*/
+.mapIcon{
+	background: url('mapicon.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/photo-icon.html*/
+.imageIcon{
+	background: url('imageicon.png');
+}
+/*http://www.iconarchive.com/show/fugue-icons-by-yusuke-kamiyamane/report-image-icon.html*/
+.reportIcon{
+	background: url('reporticon.png');
+}
+/*http://www.iconarchive.com/show/openphone-icons-by-walrick/Graph-icon.html*/
+.graphIcon{
+	background: url('graphicon.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/map-magnify-icon.html*/
+.zoomIcon{
+	background: url('zoomicon.png');
+}
+/*http://www.iconarchive.com/show/blankon-icons-by-zeusbox/bookmark-icon.html*/
+.bookmarkIcon{
+	background: url('bookmarkicon.png');
+}
+/*http://www.iconarchive.com/show/nuoveXT-2-icons-by-saki/Actions-arrow-down-icon.html*/
+.queryIcon{
+	background: url('queryicon.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/draw-polygon-curves-icon.html Backlink to http://www.fatcow.com/free-icons */
+.drawMPolygon16{
+	background: url('drawmpolygon16.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/draw-polygon-icon.html  backlink to http://www.fatcow.com/free-icons*/
+.drawPolygon{
+	background: url('drawpolygon.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/draw-polygon-icon.html  backlink to http://www.fatcow.com/free-icons*/
+.drawPolygon16{
+	background: url('drawpolygon16.png');
+}
+/*http://www.iconarchive.com/show/childish-icons-by-double-j-design/Map-icon.html*/
+.drawPoint{
+	background: url('drawpoint.png');
+}
+/*http://www.iconarchive.com/show/childish-icons-by-double-j-design/Map-icon.html*/
+.drawPoint16{
+	background: url('drawpoint16.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/line-split-icon.html Backlink to http://www.fatcow.com/free-icons*/
+.drawLine{
+	background: url('drawline.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/line-split-icon.html Backlink to http://www.fatcow.com/free-icons*/
+.drawLine16{
+	background: url('drawline16.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/shape-square-icon.html Backlink to http://www.fatcow.com/free-icons */
+.drawSquare{
+	background: url('drawsquare.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/layer-shaded-relief-icon.html Backlink to http://www.fatcow.com/free-icons*/
+.layer{
+	background: url('layer.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/layers-map-icon.html  Backlink to http://www.fatcow.com/free-icons*/
+.basemaps{
+	background-image: url('basemaps.png') !important;
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/layer-shaded-relief-icon.html Backlink to http://www.fatcow.com/free-icons*/
+.layers{
+	background-image: url('layers.png') !important;
+}
+/*http://www.iconarchive.com/show/fugue-icons-by-yusuke-kamiyamane/rocket-fly-icon.html   Backlink to http://p.yusukekamiyamane.com */
+.detachIcon{
+	background: url('detachicon.png');
+}
+/*http://www.iconarchive.com/show/orb-icons-by-taytel/arrow-left-icon.html Backlink to http://taytel.deviantart.com*/
+.leftArrowIcon{
+	background: url('leftarrowicon.png');
+}
+/*http://www.iconarchive.com/show/orb-icons-by-taytel/arrow-right-icon.html Backlink to http://taytel.deviantart.com*/
+.rightArrowIcon{
+	background: url('rightarrowicon.png');
+}
+/*http://www.iconarchive.com/show/orb-icons-by-taytel/arrow-up-icon.html Backlink to http://taytel.deviantart.com*/
+.topArrowIcon{
+	background: url('toparrowicon.png');
+}
+/*http://www.iconarchive.com/show/orb-icons-by-taytel/arrow-down-icon.html Backlink to http://taytel.deviantart.com*/
+.bottomArrowIcon{
+	background: url('bottomarrowicon.png');
+}
+/*http://www.iconarchive.com/show/oxygen-icons-by-oxygen-icons.org/Actions-document-save-as-icon.html*/
+.saveQuery{
+	background: url('savequery.png');
+}
+/*http://icons.iconarchive.com/icons/creative-freedom/shimmer/16/Open-icon.png  Backlink to http://www.creativefreedom.co.uk   */   
+.loadQuery{
+	background: url('loadquery.png');
+}
+/*http://www.iconarchive.com/show/crystal-clear-icons-by-everaldo/Action-window-new-icon.html*/
+.queryWindow{
+	background: url('querywindow.png');
+}
+/*http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/walk-icon.html   Backlink to  http://www.fatcow.com/free-icons*/
+.walkIcon{
+	background: url('walk.png');
+}
+/*http://www.iconarchive.com/show/oxygen-icons-by-oxygen-icons.org/Actions-edit-clear-icon.html*/
+.deselect{
+	background: url('deselect.png');
+}
+/*http://www.iconarchive.com/show/oxygen-icons-by-oxygen-icons.org/Actions-edit-clear-icon.html  Backlink to http://semlabs.co.uk*/
+.buffer{
+	background: url('buffer.png');
+}
+.areaIcon{
+	background: url('draw_polygon_off.png');
+}
+.areaIconPress{
+	background: url('draw_polygon_on.png');
+}
+.lengthIcon{
+	background: url('draw_line_off.png');
+}
+.lengthIconPress{
+	background: url('draw_line_on.png');
+}
+.radarGraph{
+	background: url('radar.png');
+}
+.totalGraph{
+	background: url('pie.gif');
+}
+/*http://www.iconarchive.com/show/led-icons-by-led24.de/help-icon.html Backlink to http://led24.de*/
+.helpIcon{
+	background: url('helpIcon.png');
+}

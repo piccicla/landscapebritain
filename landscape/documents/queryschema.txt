@@ -1,0 +1,99 @@
+*****json file used to store the query in localstorage*****
+
+{
+"spatial":{
+		"extent":{"top":6705792.9222803,"left":-17244.262628277,"bottom":6704572.3184851,"right":-15111.191807991}
+			"select":{"layer":"PLACE","featurename":{"value":459632,"rawvalue":" S \u00c0irde Beinn"},"radius":"4","unitbuffer":"km"}
+		//TODO you should add the feature type   point,line,polygon
+		"draw":{
+			"coordinates":[[-890998.57678816,7235580.6092049],[-858283.52868665,7293061.2544674]],
+			"radius":"10",
+			"unitbuffer":"km"}		
+		},
+"level":{	
+		"level1":{"value":1,"rawvalue":"Environment/ Landform"},
+		"level2":{"value":4,"rawvalue":"Aeolian"},
+		"level3":{"value":50,"rawvalue":"Dune"}
+		},
+"attribute":{
+		"author":"claudio ",
+		"title":["snow","Mountain"], //by default on the server there is a 'or' query 
+		"year":"1924",
+		//TODO i should get id code and not the name check the store....this is a problem with the database schema....		
+		"publication":"Annali di Chimica",
+		"publisher":"Blackwell Publishing on behalf of the Swedish Society for Anthropology and Geography",
+		"source":{"value":2,"rawvalue":"journal"}
+		"type":"or"
+		},
+"abstr":{
+		"keyword":["snow","blah"],
+		"type":"or"
+		}
+////////////////////,"combined":{"querytype":"or"}
+}
+
+
+
+*****queryParameters to query the database*****
+
+spatial tab
+according to the selection in the spatial tab I'll got one on the next 3 strings, on the server I check
+the spatial string and react accordingly, if the re are problems send failure to the client
+
+spatial=extent&top=6705792.9222803&left=-17244.262628277&button=6704572.3184851&right=-15111.191807991
+
+spatial=select&layer=PLACE&featurename=459632&radius=4&unit=km
+
+spatial=draw&ftype=[point|line|polygon]&coord=[[x,y],[...]]&radius=4&unit=km
+
+attributes tab
+
+on the server on the server in there is l1 i check if there is also l2 and l3 and react 
+l1=true&l1value=4
+l2=true&l1value=5
+l3=true&l1value=6
+
+author=claudio&title=Mountain&year=1924&publication=XXXX&publisher=XXXX&type=[and|or]
+
+&abstr=[snow,blah,...]&abstrtype=[and|or]
+
+
+&combined=[and|or]
+
+//this identify the query
+&queryid=0.090909
+
+
+this is not working
+
+{"spatial":{"draw":{"radius":"0","unitbuffer":"km"}},"level":{"level1":{"value":1,"rawvalue":"Environment/ Landform"},"level2":{"value":4,"rawvalue":"Aeolian"},"level3":{"value":50,"rawvalue":"Dune"}},"attribute":{"author":"claudio ","title":"Mountain","year":"1924","publication":"Annali di Chimica","publisher":"Blackwell Publishing on behalf of the Swedish Society for Anthropology and Geography","type":"or"},"abstr":{"keyword":"snow"},"combined":{"querytype":"or"}}
+
+
+
+for pdf generation there are the queryparams + parameters to get the pdf
+getabst=true|false   if you want the abstract
+parname=blahbla   a title for the report
+
+//these are to get the single selection
+single=true;
+id=1234
+
+//these are to get the multiple selection
+multiple=true;
+id=[1234,5675,6767]
+
+
+//this is to get the correct page if you want to print only a page
+offset
+//this is used to inform the server that you selected on the map and therefore the grid store is different
+singleart
+
+//this s the name of the feature used for spatial query
+featurerawname
+//these are the names of the feature used for spatial query
+l1name
+l2name
+l3name
+
+//delimiter to use in the csv file
+csvdel=;|,

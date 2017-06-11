@@ -1,0 +1,27 @@
+with spatial_filter("ART_ID") as(SELECT distinct a."ART_ID" 
+	FROM landscape."LOCATION" as a 
+	INNER JOIN (select ST_Buffer(ST_GeogFromText('POLYGON((-0.96728210197809 50.950098093353,-3.8676727269781 52.714977057824,-0.9233367894781 54.103191661926,-0.96728210197809 50.950098093353))'),units_from_to('km','m',6))::geometry as GEOM) as myBox
+	ON ST_Intersects(a."GEOM", myBox.GEOM)),
+level_filter("ART_ID") as(
+	SELECT distinct a."ART_ID"
+	FROM 
+	landscape."LEVEL2" as l2 inner join landscape."ARTICLE_LEVEL" as al on l2."L2_ID"=al."L2_ID"
+	inner join spatial_filter as a on al."ART_ID"=a."ART_ID" 
+	WHERE l2."L2_ID" =2),
+attribute_filter("ART_ID") as(
+	SELECT art."ART_ID"
+	FROM landscape."ARTICLE" as art inner join  level_filter as lf on art."ART_ID"=lf."ART_ID" inner join landscape."SOURCE" as s on art."SOURCE_ID"=s."SOURCE_ID"
+	WHERE art."AUTHOR" ~* 'White' AND to_tsvector('english',art."TITLE") @@ to_tsquery('english','Coastal | sand') AND art."YEAR"=1936 AND art."PUB_NAME" ='Bulletin of the Seismological Society of America' AND art."PUBLISHER" ='Elsevier : Oxford, United Kingdom' AND s."SOURCE_ID"=2),
+abstract_filter("ART_ID") as(                     
+	select  a."ART_ID", a."TEXT"
+	from  (SELECT art."ART_ID",s."TEXT"
+	FROM landscape."ARTICLE" as art inner join  attribute_filter as lf on art."ART_ID"=lf."ART_ID" inner join landscape."ABSTRACT" as s on art."ART_ID"=s."ART_ID"
+	where  to_tsvector('english',s."TEXT") @@ to_tsquery('english','sand & gravel')) as a 
+	order by a."ART_ID")
+Select art."ART_ID" as "id",art."AUTHOR",art."TITLE",art."PUB_NAME", art."START_PAGE", art."END_PAGE",art."VOL",art."YEAR",art."YEAR2",art."PUBLISHER",art."LINK", art."DOI",p."NAME" as "PLACE", n."NAME" as "NCA",s."NAME" as "SOURCE",art."PLACE_ID",art."NCA_ID",art."SOURCE_ID", art."FLAG",c.c
+from landscape."ARTICLE" as art inner join abstract_filter as a on a."ART_ID"=art."ART_ID"
+inner join "PLACE" as p on art."PLACE_ID"=p."PLACE_ID"
+inner join "NCA" as n on art."NCA_ID"=n."NCA_ID"
+inner join "SOURCE" as s on art."SOURCE_ID"=s."SOURCE_ID",
+(select count("ART_ID") as c from abstract_filter) as c
+order by art."ART_ID" LIMIT 100 OFFSET 0

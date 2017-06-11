@@ -1,0 +1,14 @@
+Ext.define('BSG.view.MapPanel',{
+	extend:'Ext.panel.Panel',
+	alias:'widget.mappanel',	
+	initComponent:function(){
+		this.id='mappanel',
+		this.dockedItems=[{
+			dock:'bottom',
+			xtype:'toolbar',
+			height:30
+			//,items:[{xtype:'combostyle'},{xtype:'bookmarkbutton'}]		
+		}];
+		this.callParent(arguments);	
+	}	
+});

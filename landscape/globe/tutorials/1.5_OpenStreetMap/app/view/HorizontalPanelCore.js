@@ -1,0 +1,25 @@
+Ext.define('BSG.view.HorizontalPanelCore',{
+	extend:'Ext.panel.Panel',
+	alias:'widget.horizontalpanelcore',
+	initComponent:function(){
+		this.layout='border';
+		
+		if(!BSG.variables){BSG.variables={};}
+		BSG.variables.biblioGrid=Ext.create('BSG.view.BiblioGrid');		
+		this.items=[		
+			BSG.variables.biblioGrid,
+			/*{
+			xtype:'bibliogrid',
+			region:'center'
+			},*/
+			{
+			xtype:'detailgridtab',
+			//xtype:'tabpanel',
+			region:'east',
+			collapsible:true,
+			split:true
+			}
+		];
+		this.callParent(arguments);	
+	}	
+});

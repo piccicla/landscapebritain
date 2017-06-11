@@ -1,0 +1,12 @@
+[2012-Feb-17 17:37:17]: Logging started
+[2012-Feb-17 17:37:17] ERROR: Wrong parameters!
+[2012-Feb-17 17:37:18]: 
+Program-Options:
+  --layer arg           name of layer to add the data
+  --triangulate         triangulate dataset
+  --maxpoints arg       [optional] max number of points per tile. Default is 
+                        512.
+  --grid                create grid [currently unsupported, do not use!]
+  --numthreads arg      force number of threads
+  --verbose             verbose output
+

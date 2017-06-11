@@ -1,0 +1,17 @@
+[2012-Feb-17 17:37:06]: Logging started
+[2012-Feb-17 17:37:06] ERROR: Wrong parameters!
+[2012-Feb-17 17:37:06]: 
+Program-Options:
+  --image arg           image file to add
+  --elevation arg       elevation file to add
+  --greyimage arg       grey image file to add
+  --point arg           point file to add
+  --srs arg             spatial reference system for input file
+  --layer arg           name of layer to add the data
+  --fill                fill empty parts, don't overwrite already existing data
+  --overwrite           overwrite existing data
+  --numthreads arg      force number of threads
+  --verbose             verbose output
+  --nolock              disable file locking (also forcing 1 thread)
+  --force               force adding data
+
